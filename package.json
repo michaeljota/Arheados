@@ -1,6 +1,8 @@
 {
   "name": "arheados",
-  "version": "0.0.0",
+  "version": "0.3.2",
+  "author": "Michael De Abreu <michaeljota@outlook.com>",
+  "description": "An AngularJS witheboard.",
   "dependencies": {},
   "devDependencies": {
     "grunt": "^0.4.1",
