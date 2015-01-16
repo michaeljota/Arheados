@@ -94,6 +94,9 @@ angular.module('arheadosApp')
         points = [];
         points.push(starPoint);
         points.push(endPoint);
+        $scope.filled = true;
+      }else{ 
+        $scope.filled = false;
       }
       return {
         ToolName: $scope.tool,
@@ -162,10 +165,10 @@ angular.module('arheadosApp')
     $scope.lineColor = colors.black;
     $scope.lineWidth = 1;
     $scope.lineCap = 'round';
-    $scope.fillStyle = colors.gray;
-    $scope.filled = false;
+    $scope.fillStyle = colors.transparent;
+    $scope.filled = true;
     $scope.stroked = true;
-
+    
     //Funcions
 
     $scope.init = function () {
@@ -194,8 +197,8 @@ angular.module('arheadosApp')
       };
 
       window.addEventListener('resize', resizeCanvas);
-
       window.addEventListener('load', resizeCanvas());
+
     };
 
 
