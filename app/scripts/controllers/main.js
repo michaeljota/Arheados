@@ -10,10 +10,28 @@
 angular.module('arheadosApp')
   .controller('MainCtrl', function ($scope) {
 
+    function Shape (shape) {
+      this.ToolName   = shape.tool;
+      this.LineColor  = shape.lineColor;
+      this.LineWidth  = shape.lineWidth;
+      this.LineCap    = shape.lineCap;
+      this.FillStyle  = shape.fillStyle;
+      this.isFilled   = shape.filled;
+      this.isStroked  = shape.stroked;
+      this.Points     = [];
+    }
+
+    Shape.prototype.addPoint = function(point){
+      if(this.ToolName!=='pencil' && this.Points.length>1){
+        this.Points.pop();
+      }
+      this.Points.push(point);
+    };
+
     var colors = {
-      transparent: 'rgba(0,0,0,0)',
-      black: 'rbga(0,0,0,1)',
-      gray: 'rgba(180,180,180,1)'
+      transparent: 'rgba(0, 0, 0, 0)',
+      black:       'rgba(0, 0, 0, 1)',
+      gray:        'rgba(180, 180, 180, 1)'
     };
 
     //Internal
@@ -21,9 +39,8 @@ angular.module('arheadosApp')
     //Variables
     canvas,
     context,
-    drawing,
-    points,
     shapeStorage,
+    tmpShape,
 
     //Functions
 
@@ -31,8 +48,8 @@ angular.module('arheadosApp')
       context.beginPath();
       context.lineWidth = shape.LineWidth;
       context.lineCap = shape.LineCap;
-      context.fillStyle = shape.Filled ? shape.FillStyle : colors.transparent;
-      context.strokeStyle = shape.Stroked ? shape.LineColor : colors.transparent;
+      context.strokeStyle = shape.isStroked ? shape.LineColor : colors.transparent;
+      context.fillStyle = shape.isFilled ? shape.FillStyle : colors.transparent;
       switch (shape.ToolName){
         case 'pencil':
           pencil(shape);
@@ -48,7 +65,7 @@ angular.module('arheadosApp')
           break;
         default:
           console.log('ERR! ToolName undefined or invalid');
-          resetPoints();
+          resetTmpShape();
           break;
       }
       context.fill();
@@ -86,65 +103,43 @@ angular.module('arheadosApp')
       }
     },
 
-    getShape = function() {
-      if($scope.tool !== 'pencil' && points.length > 1) {
-        var starPoint, endPoint;
-        starPoint = points[0];
-        endPoint = points[points.length - 1];
-        points = [];
-        points.push(starPoint);
-        points.push(endPoint);
-        $scope.filled = true;
-      }else{ 
-        $scope.filled = false;
-      }
-      return {
-        ToolName: $scope.tool,
-        LineColor: $scope.lineColor,
-        LineWidth: $scope.lineWidth,
-        LineCap: $scope.lineCap,
-        FillStyle: $scope.fillStyle,
-        Points: points,
-        Filled: $scope.filled,
-        Stroked: $scope.stroked
-      };
-    },
-
     startDrawing = function() {
-      drawing = true;
+      tmpShape = new Shape($scope.shape);
     },
 
-    continueDrawing = function (mobile) {
-      if (drawing) {
-        var point = {x:0, y:0};
-        if(mobile){
-          point.x = event.touches[0].pageX - event.target.offsetLeft;
-          point.y = event.touches[0].pageY - event.target.offsetTop;
-        }else{
-          point.x = event.pageX - event.target.offsetLeft;
-          point.y = event.pageY - event.target.offsetTop;
-        }
-        points.push(point);
-        if($scope.tool !== 'pencil'){
+    continueDrawing = function () {
+      if (tmpShape) {
+        var point = (event.touches) ?
+          {
+            x: event.touches[0].pageX - event.target.offsetLeft,
+            y: event.touches[0].pageY - event.target.offsetTop
+          } : 
+          {
+            x: event.pageX - event.target.offsetLeft,
+            y: event.pageY - event.target.offsetTop
+          };
+        if(tmpShape.ToolName !== 'pencil'){
           renderShapeStorage();
         }
-        if(points.length > 1){
-          renderShape(getShape());
+        tmpShape.addPoint(point);
+        if(tmpShape.Points.length > 1){
+          renderShape(tmpShape);
         }
       }
     },
 
     endDrawing = function () {
-      if(points.length > 1){
-          shapeStorage.push(getShape());
+      if(tmpShape){
+        if(tmpShape.Points.length > 1){
+          shapeStorage.push(tmpShape);
+        }
+        renderShapeStorage();
+        resetTmpShape();
       }
-      renderShapeStorage();
-      resetPoints();
     },
 
-    resetPoints = function() {
-      points = [];
-      drawing = false;
+    resetTmpShape = function() {
+      tmpShape = null;
     },
 
     resizeCanvas = function () {
@@ -161,14 +156,16 @@ angular.module('arheadosApp')
     ;
 
     //Bindings
-    $scope.tool = 'pencil';
-    $scope.lineColor = colors.black;
-    $scope.lineWidth = 1;
-    $scope.lineCap = 'round';
-    $scope.fillStyle = colors.transparent;
-    $scope.filled = true;
-    $scope.stroked = true;
-    
+    $scope.shape = {
+        tool       : 'pencil',
+        lineColor  : colors.black,
+        lineWidth  : 1,
+        lineCap    : 'round',
+        fillStyle  : colors.transparent,
+        filled     : true,
+        stroked    : true
+    };
+
     //Funcions
 
     $scope.init = function () {
@@ -183,11 +180,11 @@ angular.module('arheadosApp')
 
       canvas.ontouchmove = function () {
         event.preventDefault();
-        continueDrawing (true);
+        continueDrawing ();
       };
 
       canvas.onmousemove = function () {
-        continueDrawing (false);
+        continueDrawing ();
       };
 
       canvas.ontouchend =
@@ -201,17 +198,19 @@ angular.module('arheadosApp')
 
     };
 
-
     $scope.resetCanvas = function (){
       shapeStorage = [];
       renderShapeStorage();
-      resetPoints();
+      resetTmpShape();
     };
 
     $scope.undo = function () {
       shapeStorage.pop();
       renderShapeStorage();
-      resetPoints();
+      resetTmpShape();
     };
 
+    $scope.$watch('shape.tool', function () {
+      $scope.shape.filled = $scope.shape.tool === 'pencil' ? false : true;
+    });
 });

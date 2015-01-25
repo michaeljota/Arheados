@@ -8,29 +8,17 @@
       <div class="toolbox">
         <div class="toolset">
           <ul>
-            <li><a href="" ng-click="tool = 'pencil'" class="pencil"> Pencil </a> </li>
-            <li><a href="" ng-click="tool = 'line'" class="line"> Line </a> </li>
-            <li><a href="" ng-click="tool = 'rectangle'" class="rectangle"> Rectangle </a></li>
-            <li><a href="" ng-click="tool = 'circle'" class="circle"> Circle </a></li>
+            <li><a href="" ng-click="shape.tool = 'pencil'" class="pencil"> Pencil </a> </li>
+            <li><a href="" ng-click="shape.tool = 'line'" class="line"> Line </a> </li>
+            <li><a href="" ng-click="shape.tool = 'rectangle'" class="rectangle"> Rectangle </a></li>
+            <li><a href="" ng-click="shape.tool = 'circle'" class="circle"> Circle </a></li>
             <ul>
               <li><a href="" ng-click="undo()" class="undo"> Undo </a></li>
               <li><a href="" ng-click="resetCanvas()" class="reset"> Reset </a></li>
             </ul>
             <ul>
-              <li><spectrum-colorpicker
-              ng-model="lineColor"
-              options="{
-                showAlpha: true
-              }"
-              format="'rgb'"
-              ></spectrum-colorpicker></li>
-              <li><spectrum-colorpicker
-              ng-model="fillStyle"
-              options="{
-                showAlpha: true
-              }"
-              format="'rgb'"
-              ></spectrum-colorpicker></li>
+              <li><spectrum-colorpicker ng-model="shape.lineColor" options="{showAlpha: true}" format="'rgb'"></spectrum-colorpicker></li>
+              <li><spectrum-colorpicker ng-model="shape.fillStyle" options="{showAlpha: true}" format="'rgb'"></spectrum-colorpicker></li>
             </ul>
           </ul>
         </div>
